@@ -75,21 +75,16 @@ async fn main() {
         let group_token = run_tokens.get_group_token("group_task_0").unwrap();
         let single_token = run_tokens.get_single_token(format!("single_task_{}", i).as_str()).unwrap();
 
-        // println!("In loop {:?}", i);
-        
         let join_handle = tokio::spawn(async move {
             println!("In Task {:?}", i);
             select! {
                 _ = group_token.cancelled() => {
-                    // println!("Group:{:?} [All Group Tasks Cancelled]", i);
                     format!("cancelled in task:{}", i)
                 }
                 _ = single_token.cancelled() => {
-                    // println!("Task:{:?} [Single Task Cancelled]", i);
                     format!("cancelled in task:{}", i)
                 }
                 _ = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
-                    // println!("user Work finished in task:{:?}", i);
                     format!("user work finished in task:{}", i)
                 }
             }
@@ -108,13 +103,15 @@ async fn main() {
 
     tokio::spawn(async move {
         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-        
+
+        // CANCEL ALL TASKS IN THE GROUP
         // let main_group_token = run_tokens.get_main_group_token("group_task_0").unwrap();
-        // println!("cancelling group token");
+        // println!("Cancelling GROUP Token");
         // main_group_token.cancel();
-        
+
+        // CANCEL A SINGLE TASK
         let single_group_token = run_tokens.get_main_single_token("single_task_1").unwrap();
-        println!("cancelling single token");
+        println!("Cancelling SINGLE Token");
         single_group_token.cancel();
     });
     
